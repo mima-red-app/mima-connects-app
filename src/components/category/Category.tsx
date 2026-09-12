@@ -1,34 +1,43 @@
-import { View } from "react-native";
+import { Pressable } from "react-native";
 import { LucideIcon } from "lucide-react-native";
+import { useThemeColor } from "heroui-native/hooks";
 import AppText from "@/components/Text";
-import { rs, useAppScale, useTypeScale } from "@/util/responsive";
+import { useTypeScale } from "@/util/responsive";
 
 interface CategoryProps {
   title: string;
   icon: LucideIcon;
+  selected?: boolean;
+  onPress?: () => void;
 }
 
-export default function Category({ title, icon: Icon }: CategoryProps) {
-  const s = useAppScale();
+export default function Category({
+  title,
+  icon: Icon,
+  selected = false,
+  onPress,
+}: CategoryProps) {
   const t = useTypeScale();
+  const accent = useThemeColor("accent");
 
   return (
-    <View className="flex-1 items-center gap-1.5 p-1">
-      <View
-        className="rounded-2xl bg-amber-300"
-        style={{ padding: rs(14, s) }}
-      >
-        <Icon size={rs(20, s)} color="#333" />
-      </View>
+    <Pressable
+      onPress={onPress}
+      className={
+        selected
+          ? "flex-row items-center gap-2 rounded-full border border-blue-600 bg-blue-600 px-4 py-2.5"
+          : "flex-row items-center gap-2 rounded-full border border-border bg-surface px-4 py-2.5"
+      }
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+    >
+      <Icon size={18} color={selected ? "#ffffff" : accent} />
       <AppText
-        className="text-center font-medium"
-        style={{ fontSize: t.caption }}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.75}
+        className={selected ? "font-medium text-white" : "font-medium"}
+        style={{ fontSize: t.body }}
       >
         {title}
       </AppText>
-    </View>
+    </Pressable>
   );
 }

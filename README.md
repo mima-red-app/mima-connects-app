@@ -1,56 +1,75 @@
-# Welcome to your Expo app 👋
+# MimaConnect
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App móvil (Expo + React Native) para encontrar profesionales de servicios del hogar: electricistas, plomeros, pintores y más. Incluye autenticación, home con destacados, explorador con buscador y asistente IA, y perfiles de profesional con reseñas.
 
-## Get started
+## Stack
 
-1. Install dependencies
+- **Expo SDK 57** + React Native 0.86 + React 19 (file-based routing con `expo-router`, `typedRoutes`)
+- **HeroUI Native** (componentes UI) + **Uniwind** (Tailwind v4) + fuente **Poppins**
+- **Supabase** (auth con sesión persistida en AsyncStorage)
+- **react-hook-form + zod** (formularios con validación)
+- **pnpm** como gestor de paquetes
+
+## Funcionalidades
+
+- **Auth**: login/registro con Supabase, sesión persistida, rutas protegidas (`Stack.Protected`), redirect automático según sesión y loader de pantalla completa solo durante la llamada real.
+- **Home**: scroll con categorías (pills, 6 visibles → "Ver todas" va a Explorar con filtro), profesionales destacados (carrusel con snap) y recomendados por la comunidad.
+- **Explorar**: buscador por nombre/servicio/ubicación (insensible a tildes), categorías con selección toggle, resultados en lista vertical y asistente IA inline que vuelca sugerencias en la lista principal.
+- **Perfil de profesional** (`/professional/[id]`): stats, contactar, reseñas con diseño propio, "ver más" en comentarios largos y fecha relativa ("hace 3 días"). Back genérico a la pantalla anterior.
+- **UI**: tema HeroUI personalizado (light/dark), tipografía uniforme y responsiva (`useTypeScale`), header reutilizable con back automático y loader global.
+
+## Estructura
+
+```
+src/
+├── app/                    # Rutas (expo-router)
+│   ├── _layout.tsx         # Providers, fuentes, sesión y rutas protegidas
+│   ├── index.tsx           # Redirect según sesión
+│   ├── (auth)/             # login, register
+│   ├── (tab)/              # home, explore (tabs)
+│   └── professional/[id].tsx
+├── components/             # Header, Loader, Text (Poppins), Category, Review…
+├── features/
+│   ├── auth/               # service, hooks (useAuth, useCurrentUser), AuthForm
+│   ├── professional/       # cards, listas, datos y tipos
+│   └── ai/                 # Asistente IA + matcher por palabras clave
+└── util/                   # supabase client, responsive, search, time-ago
+assets/fonts/               # Poppins empaquetada en local
+```
+
+## Puesta en marcha
+
+1. Instalar dependencias:
 
    ```bash
-   npm install
+   pnpm install
    ```
 
-2. Start the app
+2. Crear un archivo `.env` con las claves de Supabase:
+
+   ```bash
+   EXPO_PUBLIC_SUPABASE_URL=https://tu-proyecto.supabase.co
+   EXPO_PUBLIC_SUPABASE_KEY=tu-anon-key
+   ```
+
+   > Para registro con login inmediato (sin correo de confirmación): en el dashboard de Supabase → Authentication → Providers → Email → desactivar **"Confirm email"**.
+
+3. Iniciar la app:
 
    ```bash
    npx expo start
    ```
 
-In the output, you'll find options to open the app in a
+   Abrir con [Expo Go](https://expo.dev/go), emulador Android o `npx expo run:android` (los cambios de `app.json` nativo requieren rebuild, no basta el reload).
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+## Verificación
 
 ```bash
-npm run reset-project
+npx tsc --noEmit                                  # tipos
+npx expo export --platform android                 # bundle sin errores
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Notas
 
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Las fuentes Poppins van empaquetadas en `assets/fonts` (la carga desde `@expo-google-fonts` fallaba por el `+` en rutas pnpm de Metro).
+- Los datos de profesionales/reseñas y la IA son mocks locales listos para conectar a Supabase (`ai-matcher.ts`, `data/professionals.ts`).

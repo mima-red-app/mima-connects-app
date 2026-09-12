@@ -1,13 +1,17 @@
 import Category from "@/components/category/Category";
+import { CATEGORIES } from "@/components/category/categories";
 import ReviewList from "@/components/review/ReviewList";
 import AppText from "@/components/Text";
 import ProfessionalList from "@/features/professional/components/ProfessionalList";
 import { useTypeScale } from "@/util/responsive";
-import { Scissors } from "lucide-react-native";
-import { ScrollView, View } from "react-native";
+import { useThemeColor } from "heroui-native/hooks";
+import { router } from "expo-router";
+import { ChevronRight } from "lucide-react-native";
+import { Pressable, ScrollView, View } from "react-native";
 
 const HomeScreen = () => {
   const t = useTypeScale();
+  const accent = useThemeColor("accent");
 
   return (
     <View className="flex-1 bg-background">
@@ -24,29 +28,46 @@ const HomeScreen = () => {
         <View className="gap-2">
           <View className="flex-row items-center justify-between">
             <AppText
-              className="font-bold"
+              className="font-bold text-foreground"
               style={{ fontSize: t.sectionTitle }}
             >
-              Explorar servicios
+              Categorías
             </AppText>
-            <AppText
-              className="font-medium text-blue-600 dark:text-[#6ea8fe]"
-              style={{ fontSize: t.body }}
+            <Pressable
+              onPress={() => router.push("/explore")}
+              className="flex-row items-center"
+              accessibilityRole="button"
+              accessibilityLabel="Ver todas las categorías"
             >
-              Ver todos
-            </AppText>
+              <AppText
+                className="font-medium text-blue-600 dark:text-[#6ea8fe]"
+                style={{ fontSize: t.body }}
+              >
+                Ver todas
+              </AppText>
+              <ChevronRight size={16} color={accent} />
+            </Pressable>
           </View>
-          <View className="flex-row gap-2">
-            <Category title="Categoría 1" icon={Scissors} />
-            <Category title="Categoría 2" icon={Scissors} />
-            <Category title="Categoría 3" icon={Scissors} />
-            <Category title="Categoría 4" icon={Scissors} />
+          <View className="flex-row flex-wrap gap-2">
+            {CATEGORIES.slice(0, 6).map((category) => (
+              <Category
+                key={category.title}
+                title={category.title}
+                icon={category.icon}
+                onPress={() =>
+                  router.push({
+                    pathname: "/explore",
+                    params: { category: category.query },
+                  })
+                }
+              />
+            ))}
           </View>
         </View>
 
         <View className="gap-2">
           <AppText
-            className="font-bold"
+            className="font-bold text-foreground"
             style={{ fontSize: t.sectionTitle }}
           >
             Profesionales destacados
@@ -56,10 +77,10 @@ const HomeScreen = () => {
 
         <View className="gap-2">
           <AppText
-            className="font-bold"
+            className="font-bold text-foreground"
             style={{ fontSize: t.sectionTitle }}
           >
-            Reseñas recientes
+            Recomendados por la comunidad
           </AppText>
           <ReviewList />
         </View>

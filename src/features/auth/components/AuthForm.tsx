@@ -50,6 +50,18 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   });
 
   const [isPending, setIsPending] = useState(false);
+  const [focusedField, setFocusedField] = useState<"email" | "password" | null>(
+    null
+  );
+
+  const groupClassName = (state: "error" | "focused" | "default") =>
+    `rounded-2xl border bg-white shadow-sm overflow-hidden ${
+      state === "error"
+        ? "border-danger"
+        : state === "focused"
+          ? "border-accent"
+          : "border-gray-300"
+    }`;
 
   const onSubmit = async (data: LoginSchemaType) => {
     setSubmitError(null);
@@ -102,7 +114,15 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                   <Label className="text-base font-semibold text-foreground">
                     Correo electrónico
                   </Label>
-                  <InputGroup className="rounded-2xl border border-gray-300 bg-white shadow-sm">
+                  <InputGroup
+                    className={groupClassName(
+                      fieldState.error
+                        ? "error"
+                        : focusedField === "email"
+                          ? "focused"
+                          : "default"
+                    )}
+                  >
                     <InputGroup.Prefix isDecorative>
                       <Mail size={20} color="#9CA3AF" />
                     </InputGroup.Prefix>
@@ -114,8 +134,10 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                       autoCorrect={false}
                       value={field.value}
                       onChangeText={field.onChange}
-                      onBlur={field.onBlur}
-                      className="h-14 text-base border"
+                      onBlur={() => { field.onBlur(); setFocusedField(null); }}
+                      onFocus={() => setFocusedField("email")}
+                      style={{ borderWidth: 0 }}
+                      className="h-14 text-base"
                     />
                   </InputGroup>
                   <FieldError>{fieldState.error?.message}</FieldError>
@@ -131,7 +153,15 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                   <Label className="text-base font-semibold text-foreground">
                     Contraseña
                   </Label>
-                  <InputGroup className="rounded-2xl border border-gray-300 bg-white shadow-sm">
+                  <InputGroup
+                    className={groupClassName(
+                      fieldState.error
+                        ? "error"
+                        : focusedField === "password"
+                          ? "focused"
+                          : "default"
+                    )}
+                  >
                     <InputGroup.Prefix isDecorative>
                       <Lock size={20} color="#9CA3AF" />
                     </InputGroup.Prefix>
@@ -143,7 +173,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                       autoCorrect={false}
                       value={field.value}
                       onChangeText={field.onChange}
-                      onBlur={field.onBlur}
+                      onBlur={() => { field.onBlur(); setFocusedField(null); }}
+                      onFocus={() => setFocusedField("password")}
+                      style={{ borderWidth: 0 }}
                       className="h-14 text-base"
                     />
                   </InputGroup>

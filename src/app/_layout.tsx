@@ -2,29 +2,26 @@ import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native/provider";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import {
-  useFonts,
-  Poppins_400Regular,
-  Poppins_500Medium,
-  Poppins_600SemiBold,
-  Poppins_700Bold,
-  Poppins_800ExtraBold,
-} from "@expo-google-fonts/poppins";
+import { useFonts } from "expo-font";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import Loader from "@/components/Loader";
 import "../global.css";
 
 export default function RootLayout() {
   const { user, isLoading } = useAuth();
-  const [fontsLoaded] = useFonts({
-    Poppins_400Regular,
-    Poppins_500Medium,
-    Poppins_600SemiBold,
-    Poppins_700Bold,
-    Poppins_800ExtraBold,
+  const [fontsLoaded, fontError] = useFonts({
+    Poppins_400Regular: require("../../assets/fonts/Poppins_400Regular.ttf"),
+    Poppins_500Medium: require("../../assets/fonts/Poppins_500Medium.ttf"),
+    Poppins_600SemiBold: require("../../assets/fonts/Poppins_600SemiBold.ttf"),
+    Poppins_700Bold: require("../../assets/fonts/Poppins_700Bold.ttf"),
+    Poppins_800ExtraBold: require("../../assets/fonts/Poppins_800ExtraBold.ttf"),
   });
 
-  if (!fontsLoaded) {
+  if (fontError) {
+    console.warn("[RootLayout] font load failed:", fontError);
+  }
+
+  if (!fontsLoaded && !fontError) {
     return <Loader />;
   }
 

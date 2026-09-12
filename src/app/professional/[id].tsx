@@ -4,7 +4,7 @@ import { Avatar, Button } from "heroui-native";
 import { MapPin, Star, Users } from "lucide-react-native";
 import Header from "@/components/Header";
 import AppText from "@/components/Text";
-import ReviewList from "@/components/review/ReviewList";
+import ProfileReviewList from "@/features/professional/components/ProfileReviewList";
 import { PROFESSIONALS } from "@/features/professional/data/professionals";
 import { useTypeScale } from "@/util/responsive";
 
@@ -149,7 +149,7 @@ export default function ProfessionalProfileScreen() {
           >
             Reseñas
           </AppText>
-          <ReviewList />
+          <ProfileReviewList professionalId={professional.id} />
         </View>
       </ScrollView>
     </View>

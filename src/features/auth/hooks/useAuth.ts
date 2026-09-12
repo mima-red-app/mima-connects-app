@@ -15,17 +15,37 @@ export function useAuth() {
   useEffect(() => {
     let active = true;
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const fallback = setTimeout(() => {
       if (!active) return;
-      setSession(session);
-      setUser(session?.user ?? null);
+      console.warn("[useAuth] session restore timed out, continuing logged out");
+      setSession(null);
+      setUser(null);
       setIsLoading(false);
-    });
+    }, 10000);
+
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        if (!active) return;
+        clearTimeout(fallback);
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        if (!active) return;
+        clearTimeout(fallback);
+        console.warn("[useAuth] getSession failed:", error);
+        setSession(null);
+        setUser(null);
+        setIsLoading(false);
+      });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, newSession) => {
       if (!active) return;
+      clearTimeout(fallback);
       setSession(newSession);
       setUser(newSession?.user ?? null);
       setIsLoading(false);
@@ -33,6 +53,7 @@ export function useAuth() {
 
     return () => {
       active = false;
+      clearTimeout(fallback);
       subscription.unsubscribe();
     };
   }, []);

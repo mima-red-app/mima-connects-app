@@ -9,6 +9,7 @@ const TabLayout = () => {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
       <Tabs
+
         screenOptions={{
           headerShown: true,
           header: ({ options }) => (
@@ -22,6 +23,7 @@ const TabLayout = () => {
                 />
               }
               includeSafeArea={false}
+              showBack={false}
             />
           ),
         }}
