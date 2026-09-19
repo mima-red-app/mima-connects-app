@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Modal, ScrollView, View } from "react-native";
+import { Modal, Pressable, ScrollView, View } from "react-native";
 import AppText from "@/components/Text";
 import {
   Button,
@@ -11,7 +11,7 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Lock, Mail } from "lucide-react-native";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 
 import {
   loginSchema,
@@ -50,9 +50,10 @@ const AuthForm = ({ mode }: AuthFormProps) => {
   });
 
   const [isPending, setIsPending] = useState(false);
-  const [focusedField, setFocusedField] = useState<"email" | "password" | null>(
-    null
-  );
+  const [focusedField, setFocusedField] = useState<
+    "email" | "password" | null
+  >(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const groupClassName = (state: "error" | "focused" | "default") =>
     `rounded-2xl border bg-white shadow-sm overflow-hidden ${
@@ -62,6 +63,15 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           ? "border-accent"
           : "border-gray-300"
     }`;
+
+  const inputStyle = {
+    borderWidth: 0,
+    textAlignVertical: "center" as const,
+    height: 48,
+    lineHeight: 20,
+    paddingTop: 0,
+    paddingBottom: 0,
+  };
 
   const onSubmit = async (data: LoginSchemaType) => {
     setSubmitError(null);
@@ -93,25 +103,20 @@ const AuthForm = ({ mode }: AuthFormProps) => {
         showsVerticalScrollIndicator={false}
         className="flex-1"
       >
-        <View className="p-8 pb-12">
-          <View className="mb-8 gap-1.5">
-            <AppText className="text-3xl font-bold text-center text-foreground">
+        <View className="px-6 pt-8 pb-6">
+          <View className="mb-6 gap-1">
+            <AppText className="text-2xl font-bold text-center text-foreground">
               {isRegister ? "Crea tu cuenta" : "Iniciar sesión"}
             </AppText>
-            {/*<AppText className="text-base text-[#6B7280]">
-              {isRegister
-                ? "Completa tus datos para empezar."
-                : "Ingresa tus credenciales para continuar."}
-            </AppText>*/}
           </View>
 
-          <View className="gap-6">
+          <View className="gap-5">
             <Controller
               control={form.control}
               name="email"
               render={({ field, fieldState }) => (
                 <TextField isInvalid={!!fieldState.error}>
-                  <Label className="text-base font-semibold text-foreground">
+                  <Label className="text-sm font-semibold text-foreground">
                     Correo electrónico
                   </Label>
                   <InputGroup
@@ -124,7 +129,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                     )}
                   >
                     <InputGroup.Prefix isDecorative>
-                      <Mail size={20} color="#9CA3AF" />
+                      <Mail size={18} color="#9CA3AF" />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       placeholder="tucorreo@ejemplo.com"
@@ -134,10 +139,13 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                       autoCorrect={false}
                       value={field.value}
                       onChangeText={field.onChange}
-                      onBlur={() => { field.onBlur(); setFocusedField(null); }}
+                      onBlur={() => {
+                        field.onBlur();
+                        setFocusedField(null);
+                      }}
                       onFocus={() => setFocusedField("email")}
-                      style={{ borderWidth: 0 }}
-                      className="h-14 text-base"
+                      style={inputStyle}
+                      className="h-12 text-base"
                     />
                   </InputGroup>
                   <FieldError>{fieldState.error?.message}</FieldError>
@@ -150,7 +158,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
               name="password"
               render={({ field, fieldState }) => (
                 <TextField isInvalid={!!fieldState.error}>
-                  <Label className="text-base font-semibold text-foreground">
+                  <Label className="text-sm font-semibold text-foreground">
                     Contraseña
                   </Label>
                   <InputGroup
@@ -163,21 +171,42 @@ const AuthForm = ({ mode }: AuthFormProps) => {
                     )}
                   >
                     <InputGroup.Prefix isDecorative>
-                      <Lock size={20} color="#9CA3AF" />
+                      <Lock size={18} color="#9CA3AF" />
                     </InputGroup.Prefix>
                     <InputGroup.Input
                       placeholder="••••••••"
                       placeholderTextColor="#9CA3AF"
-                      secureTextEntry
+                      secureTextEntry={!showPassword}
                       autoCapitalize="none"
                       autoCorrect={false}
                       value={field.value}
                       onChangeText={field.onChange}
-                      onBlur={() => { field.onBlur(); setFocusedField(null); }}
+                      onBlur={() => {
+                        field.onBlur();
+                        setFocusedField(null);
+                      }}
                       onFocus={() => setFocusedField("password")}
-                      style={{ borderWidth: 0 }}
-                      className="h-14 text-base"
+                      style={inputStyle}
+                      className="h-12 text-base"
                     />
+                    <InputGroup.Suffix>
+                      <Pressable
+                        onPress={() => setShowPassword((prev) => !prev)}
+                        hitSlop={8}
+                        accessibilityRole="button"
+                        accessibilityLabel={
+                          showPassword
+                            ? "Ocultar contraseña"
+                            : "Mostrar contraseña"
+                        }
+                      >
+                        {showPassword ? (
+                          <EyeOff size={18} color="#9CA3AF" />
+                        ) : (
+                          <Eye size={18} color="#9CA3AF" />
+                        )}
+                      </Pressable>
+                    </InputGroup.Suffix>
                   </InputGroup>
                   <FieldError>{fieldState.error?.message}</FieldError>
                 </TextField>
@@ -185,7 +214,7 @@ const AuthForm = ({ mode }: AuthFormProps) => {
             />
           </View>
 
-          <View className="mt-8 gap-5">
+          <View className="mt-6 gap-5">
             {submitError && (
               <AppText className="text-center text-sm font-medium text-red-500">
                 {submitError}
@@ -203,7 +232,9 @@ const AuthForm = ({ mode }: AuthFormProps) => {
 
             <View className="flex-row items-center gap-3">
               <View className="h-px flex-1 bg-[#E5E7EB]" />
-              <AppText className="text-sm text-[#9CA3AF]">o continúa con</AppText>
+              <AppText className="text-xs text-[#9CA3AF]">
+                o continúa con
+              </AppText>
               <View className="h-px flex-1 bg-[#E5E7EB]" />
             </View>
 

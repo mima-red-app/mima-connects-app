@@ -7,4 +7,6 @@ export interface Professional {
   reviewsCount: number;
   recommendations: number;
   location: string;
+  phone: string;
+  portfolio: string[];
 }

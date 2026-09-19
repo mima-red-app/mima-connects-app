@@ -1,22 +1,24 @@
 import React from "react";
+import { Dimensions, View } from "react-native";
 import { Image } from "expo-image";
-import { Text, View } from "react-native";
 import AuthForm from "@/features/auth/components/AuthForm";
+
+const { height: SCREEN } = Dimensions.get("window");
+const HEADER_H = Math.min(240, Math.round(SCREEN * 0.26));
 
 const LoginScreen = () => {
   return (
     <View className="flex-1 bg-blue-500">
-      <View className="items-center justify-center gap-2 h-80 px-8 pb-8 pt-8  ">
+      <View
+        className="items-center justify-center px-8 pb-6 pt-6"
+        style={{ height: HEADER_H }}
+      >
         <Image
           source={require("@/assets/images/logo-mima-red-2.png")}
           contentFit="contain"
-          style={{ width: 176, height: 144, borderRadius: 24 }}
-          className=" rounded-4xl"
+          style={{ width: 160, height: 130, borderRadius: 24 }}
+          className="rounded-4xl"
         />
-
-        {/*<Text className="text-center text-base text-white/90">
-          Inicia sesión para continuar
-        </Text>*/}
       </View>
       <View className="flex-1 overflow-hidden rounded-t-4xl bg-white">
         <AuthForm mode="login" />

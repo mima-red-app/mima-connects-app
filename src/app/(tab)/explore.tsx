@@ -151,7 +151,7 @@ export default function ExploreScreen() {
               Sin resultados para &quot;{query}&quot;
             </AppText>
           ) : (
-            <View className="gap-2.5">
+            <View className="gap-3">
               {results.map((item) => (
                 <Link
                   key={item.id}

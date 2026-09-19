@@ -13,10 +13,18 @@ export default function ProfessionalRowCard({
   professional,
 }: ProfessionalRowCardProps) {
   const t = useTypeScale();
-  const muted = useColorScheme() === "dark" ? "#9ca3af" : "#6b7280";
+  const isDark = useColorScheme() === "dark";
+  const muted = isDark ? "#9ca3af" : "#6b7280";
 
   return (
-    <View className="flex-row items-center gap-3 rounded-3xl border border-border bg-surface p-3">
+    <View
+      className="flex-row items-center gap-3 rounded-3xl bg-surface p-3"
+      style={{
+        borderWidth: 1,
+        borderColor: isDark ? "#3a3a3c" : "#d1d5db",
+        borderCurve: "continuous",
+      }}
+    >
       <Avatar size="md">
         <Avatar.Fallback>{professional.initials}</Avatar.Fallback>
       </Avatar>

@@ -46,6 +46,7 @@ export default function RootLayout() {
       <Stack.Protected guard={!!user}>
         <Stack.Screen name="(tab)" />
         <Stack.Screen name="professional/[id]" />
+        <Stack.Screen name="become-professional" />
       </Stack.Protected>
     </Stack>
   );

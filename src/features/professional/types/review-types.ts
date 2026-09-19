@@ -6,4 +6,5 @@ export interface ProfileReview {
   rating: number;
   comment: string;
   createdAt: string;
+  isMine?: boolean;
 }

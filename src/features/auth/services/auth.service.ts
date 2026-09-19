@@ -28,3 +28,17 @@ export async function getSession() {
   if (error) throw error;
   return data.session;
 }
+
+export async function updateProfile(data: {
+  full_name?: string;
+  username?: string;
+  phone?: string;
+  avatar_url?: string;
+  profession?: string;
+  location?: string;
+  bio?: string;
+}) {
+  const { data: updated, error } = await supabase.auth.updateUser({ data });
+  if (error) throw error;
+  return updated;
+}

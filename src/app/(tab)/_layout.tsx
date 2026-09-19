@@ -2,7 +2,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
-import { Search, HomeIcon } from "lucide-react-native";
+import { Search, HomeIcon, User } from "lucide-react-native";
 import Header from "@/components/Header";
 
 const TabLayout = () => {
@@ -43,6 +43,15 @@ const TabLayout = () => {
             title: "Explorar",
             tabBarIcon: ({ size, color }) => (
               <Search size={size} color={color} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Perfil",
+            tabBarIcon: ({ size, color }) => (
+              <User size={size} color={color} />
             ),
           }}
         />

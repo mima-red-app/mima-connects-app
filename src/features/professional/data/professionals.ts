@@ -1,5 +1,7 @@
 import type { Professional } from "@/features/professional/types/professional-types";
 
+const picsum = (seed: string) => `https://picsum.photos/seed/${seed}/800/600`;
+
 export const PROFESSIONALS: Professional[] = [
   {
     id: "1",
@@ -10,6 +12,15 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 24,
     recommendations: 18,
     location: "Santo Domingo Este",
+    phone: "18095550101",
+    portfolio: [
+      picsum("jose-trabajo-1"),
+      picsum("jose-trabajo-2"),
+      picsum("jose-trabajo-3"),
+      picsum("jose-trabajo-4"),
+      picsum("jose-trabajo-5"),
+      picsum("jose-trabajo-6"),
+    ],
   },
   {
     id: "2",
@@ -20,6 +31,13 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 18,
     recommendations: 12,
     location: "Santo Domingo Oeste",
+    phone: "18095550102",
+    portfolio: [
+      picsum("maria-trabajo-1"),
+      picsum("maria-trabajo-2"),
+      picsum("maria-trabajo-3"),
+      picsum("maria-trabajo-4"),
+    ],
   },
   {
     id: "3",
@@ -30,6 +48,8 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 15,
     recommendations: 9,
     location: "Distrito Nacional",
+    phone: "18095550103",
+    portfolio: [],
   },
   {
     id: "4",
@@ -40,6 +60,8 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 31,
     recommendations: 22,
     location: "Santo Domingo Este",
+    phone: "18095550104",
+    portfolio: [],
   },
   {
     id: "5",
@@ -50,6 +72,8 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 12,
     recommendations: 8,
     location: "Santo Domingo Oeste",
+    phone: "18095550105",
+    portfolio: [],
   },
   {
     id: "6",
@@ -60,6 +84,8 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 19,
     recommendations: 14,
     location: "Santiago",
+    phone: "18095550106",
+    portfolio: [],
   },
   {
     id: "7",
@@ -70,6 +96,8 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 17,
     recommendations: 11,
     location: "Distrito Nacional",
+    phone: "18095550107",
+    portfolio: [],
   },
   {
     id: "8",
@@ -80,5 +108,7 @@ export const PROFESSIONALS: Professional[] = [
     reviewsCount: 26,
     recommendations: 20,
     location: "Santiago",
+    phone: "18095550108",
+    portfolio: [],
   },
 ];
