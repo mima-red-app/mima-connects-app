@@ -1,25 +1,35 @@
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, Pressable, ScrollView, TextInput, View } from "react-native";
+import { useEffect, useMemo } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  ScrollView,
+  TextInput,
+  View,
+} from "react-native";
 import { Link, useLocalSearchParams } from "expo-router";
 import { MapPin, Search, X } from "lucide-react-native";
 import AppText from "@/components/Text";
-import Category from "@/components/category/Category";
-import { CATEGORIES } from "@/components/category/categories";
+import Category from "@/features/category/components/Category";
+import { CATEGORIES } from "@/features/category/components/categories";
 import AiAssistant from "@/features/ai/components/AiAssistant";
 import ProfessionalRowCard from "@/features/professional/components/ProfessionalRowCard";
-import { PROFESSIONALS } from "@/features/professional/data/professionals";
-import type { Professional } from "@/features/professional/types/professional-types";
+import { useProfessionals } from "@/features/professional/hooks/useProfessionals";
 import { filterProfessionals } from "@/util/search";
 import { useTypeScale } from "@/util/responsive";
+import { useProfileStore } from "@/features/profile/store";
 
 export default function ExploreScreen() {
   const t = useTypeScale();
+  const { data: allProfessionals, isLoading } = useProfessionals();
   const { category } = useLocalSearchParams<{ category?: string }>();
-  const [query, setQuery] = useState(category ?? "");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    CATEGORIES.find((item) => item.query === category)?.title ?? null
-  );
-  const [aiMatches, setAiMatches] = useState<Professional[] | null>(null);
+
+  const query = useProfileStore((s) => s.query);
+  const selectedCategory = useProfileStore((s) => s.selectedCategory);
+  const aiMatches = useProfileStore((s) => s.aiMatches);
+  const setQuery = useProfileStore((s) => s.setQuery);
+  const setSelectedCategory = useProfileStore((s) => s.setSelectedCategory);
+  const setAiMatches = useProfileStore((s) => s.setAiMatches);
 
   useEffect(() => {
     if (category) {
@@ -33,9 +43,10 @@ export default function ExploreScreen() {
     }
     setAiMatches(null);
   }, [category]);
+
   const results = useMemo(
-    () => aiMatches ?? filterProfessionals(PROFESSIONALS, query),
-    [aiMatches, query]
+    () => aiMatches ?? filterProfessionals(allProfessionals ?? [], query),
+    [aiMatches, query, allProfessionals]
   );
 
   const handleCategoryPress = (title: string, categoryQuery: string) => {
@@ -83,7 +94,10 @@ export default function ExploreScreen() {
           />
         </View>
 
-        <AiAssistant onResults={setAiMatches} />
+        <AiAssistant
+          professionals={allProfessionals ?? []}
+          onResults={setAiMatches}
+        />
 
         <View className="gap-2">
           <AppText
@@ -143,7 +157,11 @@ export default function ExploreScreen() {
               </AppText>
             </View>
           ) : null}
-          {results.length === 0 ? (
+          {isLoading ? (
+            <View className="items-center py-6">
+              <ActivityIndicator size="small" />
+            </View>
+          ) : results.length === 0 ? (
             <AppText
               className="py-6 text-center text-gray-500 dark:text-[#9ca3af]"
               style={{ fontSize: t.body }}

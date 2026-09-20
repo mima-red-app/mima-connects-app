@@ -13,10 +13,11 @@ import { Button } from "heroui-native";
 import { Plus, X } from "lucide-react-native";
 import Header from "@/components/Header";
 import AppText from "@/components/Text";
-import Category from "@/components/category/Category";
-import { CATEGORIES } from "@/components/category/categories";
-import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
-import { updateProfile } from "@/features/auth/services/auth.service";
+import Category from "@/features/category/components/Category";
+import { CATEGORIES } from "@/features/category/components/categories";
+import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
+import { updateProfile } from "@/features/profile/services/auth.service";
+import { useProfessionalForm } from "@/features/professional/store";
 import { useTypeScale } from "@/util/responsive";
 
 const MAX_PHOTOS = 10;
@@ -27,23 +28,20 @@ export default function BecomeProfessionalScreen() {
   const metadata = (raw?.user_metadata ?? {}) as Record<string, unknown>;
   const isEdit = typeof metadata.profession === "string";
 
-  const [profession, setProfession] = useState<string>(
-    (metadata.profession as string) ?? ""
-  );
-  const [phone, setPhone] = useState<string>(
-    (metadata.phone as string) ?? ""
-  );
-  const [location, setLocation] = useState<string>(
-    (metadata.location as string) ?? ""
-  );
-  const [bio, setBio] = useState<string>((metadata.bio as string) ?? "");
-  const [photos, setPhotos] = useState<string[]>([]);
+  const profession = useProfessionalForm((s) => s.profession);
+  const phone = useProfessionalForm((s) => s.phone);
+  const location = useProfessionalForm((s) => s.location);
+  const bio = useProfessionalForm((s) => s.bio);
+  const photos = useProfessionalForm((s) => s.photos);
+  const setFormField = useProfessionalForm((s) => s.setFormField);
+  const addPhoto = useProfessionalForm((s) => s.addPhoto);
+  const removePhoto = useProfessionalForm((s) => s.removePhoto);
+  const resetForm = useProfessionalForm((s) => s.resetForm);
+
   const [saving, setSaving] = useState(false);
 
   const pickPhoto = async () => {
-    if (photos.length >= MAX_PHOTOS) {
-      return;
-    }
+    if (photos.length >= MAX_PHOTOS) return;
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
@@ -58,12 +56,7 @@ export default function BecomeProfessionalScreen() {
       quality: 0.8,
     });
     if (!result.canceled) {
-      const uri = result.assets[0].uri;
-      setPhotos((prev) =>
-        prev.length >= MAX_PHOTOS || prev.includes(uri)
-          ? prev
-          : [...prev, uri]
-      );
+      addPhoto(result.assets[0].uri);
     }
   };
 
@@ -85,6 +78,7 @@ export default function BecomeProfessionalScreen() {
         location: location.trim() || undefined,
         bio: bio.trim() || undefined,
       });
+      resetForm();
       Alert.alert(
         "Listo",
         isEdit
@@ -131,8 +125,9 @@ export default function BecomeProfessionalScreen() {
                 icon={category.icon}
                 selected={profession === category.title}
                 onPress={() =>
-                  setProfession((prev) =>
-                    prev === category.title ? "" : category.title
+                  setFormField(
+                    "profession",
+                    profession === category.title ? "" : category.title
                   )
                 }
               />
@@ -153,7 +148,7 @@ export default function BecomeProfessionalScreen() {
             placeholder="809 555 0101"
             placeholderTextColor="#9CA3AF"
             value={phone}
-            onChangeText={setPhone}
+            onChangeText={(v) => setFormField("phone", v)}
             keyboardType="phone-pad"
           />
         </View>
@@ -171,7 +166,7 @@ export default function BecomeProfessionalScreen() {
             placeholder="Santo Domingo Este"
             placeholderTextColor="#9CA3AF"
             value={location}
-            onChangeText={setLocation}
+            onChangeText={(v) => setFormField("location", v)}
           />
         </View>
 
@@ -193,7 +188,7 @@ export default function BecomeProfessionalScreen() {
             placeholderTextColor="#9CA3AF"
             multiline
             value={bio}
-            onChangeText={setBio}
+            onChangeText={(v) => setFormField("bio", v)}
           />
         </View>
 
@@ -217,9 +212,7 @@ export default function BecomeProfessionalScreen() {
                   contentFit="cover"
                 />
                 <Pressable
-                  onPress={() =>
-                    setPhotos((prev) => prev.filter((item) => item !== uri))
-                  }
+                  onPress={() => removePhoto(uri)}
                   className="absolute right-1 top-1 rounded-full bg-black/60 p-1"
                   accessibilityRole="button"
                   accessibilityLabel="Quitar foto"

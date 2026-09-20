@@ -1,6 +1,6 @@
-import Category from "@/components/category/Category";
-import { CATEGORIES } from "@/components/category/categories";
-import ReviewList from "@/components/review/ReviewList";
+import Category from "@/features/category/components/Category";
+import { CATEGORIES } from "@/features/category/components/categories";
+import ReviewList from "@/features/professional/components/ReviewList";
 import AppText from "@/components/Text";
 import ProfessionalList from "@/features/professional/components/ProfessionalList";
 import { useTypeScale } from "@/util/responsive";

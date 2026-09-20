@@ -1,9 +1,9 @@
 import { View } from "react-native";
 import ProfileReviewCard from "./ProfileReviewCard";
-import type { ProfileReview } from "@/features/professional/types/review-types";
+import type { ReviewUI } from "../types";
 
 interface ProfileReviewListProps {
-  reviews: ProfileReview[];
+  reviews: ReviewUI[];
 }
 
 export default function ProfileReviewList({ reviews }: ProfileReviewListProps) {

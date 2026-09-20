@@ -3,8 +3,9 @@ import { HeroUINativeProvider } from "heroui-native/provider";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useFonts } from "expo-font";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAuth } from "@/features/profile/hooks/useAuth";
 import Loader from "@/components/Loader";
+import QueryProvider from "@/providers/QueryProvider";
 import "../global.css";
 
 export default function RootLayout() {
@@ -28,7 +29,9 @@ export default function RootLayout() {
   const providers = (children: React.ReactNode) => (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <HeroUINativeProvider>{children}</HeroUINativeProvider>
+        <HeroUINativeProvider>
+          <QueryProvider>{children}</QueryProvider>
+        </HeroUINativeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Alert, Linking, Pressable, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Pressable,
+  ScrollView,
+  View,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Avatar, Button } from "heroui-native";
 import { MapPin, MessageCircle, Phone, Star, Users } from "lucide-react-native";
@@ -9,27 +16,55 @@ import AppText from "@/components/Text";
 import ImageCarousel from "@/components/ImageCarousel";
 import ProfileReviewList from "@/features/professional/components/ProfileReviewList";
 import ReviewForm from "@/features/professional/components/ReviewForm";
-import { PROFESSIONALS } from "@/features/professional/data/professionals";
-import { PROFILE_REVIEWS } from "@/features/professional/data/profile-reviews";
-import { useCurrentUser } from "@/features/auth/hooks/useCurrentUser";
+import {
+  useProfessional,
+  useCreateReview,
+  useUpdateReview,
+} from "@/features/professional/hooks/useProfessional";
+import { useCurrentUser } from "@/features/profile/hooks/useCurrentUser";
 import { useTypeScale } from "@/util/responsive";
-import type { ProfileReview } from "@/features/professional/types/review-types";
+import type { ReviewUI } from "@/features/professional/types";
 
 export default function ProfessionalProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const t = useTypeScale();
   const accent = useThemeColor("accent");
-  const { username, email } = useCurrentUser();
-  const professional = PROFESSIONALS.find((p) => p.id === id);
+  const { fullName, email, id: userId } = useCurrentUser();
+  const {
+    data,
+    isLoading: loading,
+  } = useProfessional(id);
 
-  const [reviews, setReviews] = useState<ProfileReview[]>(() =>
-    PROFILE_REVIEWS.filter((review) => review.professionalId === id)
+  const professional = data?.professional;
+  const reviews = data?.reviews ?? [];
+
+  const createMutation = useCreateReview(
+    professional ? parseInt(professional.id) : 0
   );
+  const updateMutation = useUpdateReview(0);
+
+  const [localReviews, setLocalReviews] = useState<ReviewUI[]>([]);
   const [editing, setEditing] = useState(false);
 
-  const displayName = username ?? email?.split("@")[0] ?? "Tú";
-  const myReview = reviews.find((review) => review.isMine);
-  const otherReviews = reviews.filter((review) => !review.isMine);
+  const displayName = fullName ?? email?.split("@")[0] ?? "Tú";
+  const allReviews: ReviewUI[] = [...localReviews, ...reviews];
+  const myReview = allReviews.find(
+    (r) => r.isMine || (userId && r.reviewerName === displayName)
+  );
+  const otherReviews = allReviews.filter(
+    (r) => !r.isMine && r.reviewerName !== displayName
+  );
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-background">
+        <Header title="Perfil profesional" />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" />
+        </View>
+      </View>
+    );
+  }
 
   if (!professional) {
     return (
@@ -56,55 +91,61 @@ export default function ProfessionalProfileScreen() {
   }
 
   const openWhatsApp = () => {
+    const phone = professional.whatsapp || professional.phone;
     const message = encodeURIComponent(
       `Hola ${professional.name}, te contacto desde MimaConnect por tus servicios.`
     );
-    Linking.openURL(`https://wa.me/${professional.phone}?text=${message}`).catch(
-      () => Alert.alert("Aviso", "No se pudo abrir WhatsApp.")
+    Linking.openURL(`https://wa.me/${phone}?text=${message}`).catch(() =>
+      Alert.alert("Aviso", "No se pudo abrir WhatsApp.")
     );
   };
 
   const callProfessional = () => {
-    Linking.openURL(`tel:+${professional.phone}`).catch(() =>
+    const phone = professional.phone || professional.whatsapp;
+    Linking.openURL(`tel:+${phone}`).catch(() =>
       Alert.alert("Aviso", "No se pudo iniciar la llamada.")
     );
   };
 
-  const initialsOf = (name: string) =>
-    name
-      .split(/[\s._-]+/)
-      .map((part) => part.charAt(0))
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() || "TU";
-
-  const handleSubmitReview = (rating: number, comment: string) => {
-    if (editing && myReview) {
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === myReview.id
-            ? {
-                ...review,
-                rating,
-                comment,
-                createdAt: new Date().toISOString(),
-              }
-            : review
-        )
-      );
-      setEditing(false);
-    } else {
-      const mine: ProfileReview = {
-        id: `mine-${professional.id}-${Date.now()}`,
-        professionalId: professional.id,
-        reviewerName: displayName,
-        reviewerInitials: initialsOf(displayName),
-        rating,
-        comment,
-        createdAt: new Date().toISOString(),
-        isMine: true,
-      };
-      setReviews((prev) => [mine, ...prev]);
+  const handleSubmitReview = async (rating: number, comment: string) => {
+    try {
+      if (editing && myReview) {
+        await updateMutation.mutateAsync({
+          rating,
+          comment,
+        });
+        setLocalReviews((prev) =>
+          prev.map((r) =>
+            r.id === myReview.id
+              ? { ...r, rating, comment, createdAt: new Date().toISOString() }
+              : r
+          )
+        );
+        setEditing(false);
+      } else {
+        const newReview = await createMutation.mutateAsync({
+          rating,
+          comment,
+        });
+        const mine: ReviewUI = {
+          id: String(newReview.id),
+          professionalId: professional.id,
+          reviewerName: displayName,
+          reviewerInitials: displayName
+            .split(/[\s._-]+/)
+            .map((w) => w.charAt(0))
+            .join("")
+            .slice(0, 2)
+            .toUpperCase(),
+          rating,
+          comment,
+          createdAt: new Date().toISOString(),
+          isMine: true,
+        };
+        setLocalReviews((prev) => [mine, ...prev]);
+      }
+    } catch {
+      Alert.alert("Error", "No se pudo guardar la reseña.");
     }
   };
 
@@ -173,23 +214,9 @@ export default function ProfessionalProfileScreen() {
                 className="font-bold text-foreground"
                 style={{ fontSize: t.title }}
               >
-                {professional.recommendations}
+                {professional.reviewsCount}
               </AppText>
             </View>
-            <AppText
-              className="text-gray-500 dark:text-[#9ca3af]"
-              style={{ fontSize: t.caption }}
-            >
-              Recomendaciones
-            </AppText>
-          </View>
-          <View className="items-center gap-0.5">
-            <AppText
-              className="font-bold text-foreground"
-              style={{ fontSize: t.title }}
-            >
-              {professional.reviewsCount}
-            </AppText>
             <AppText
               className="text-gray-500 dark:text-[#9ca3af]"
               style={{ fontSize: t.caption }}

@@ -1,4 +1,4 @@
-import type { Professional } from "@/features/professional/types/professional-types";
+import type { ProfessionalUI } from "@/features/professional/types";
 
 export function normalizeText(value: string): string {
   return value
@@ -8,16 +8,14 @@ export function normalizeText(value: string): string {
 }
 
 export function filterProfessionals(
-  list: Professional[],
+  list: ProfessionalUI[],
   query: string
-): Professional[] {
+): ProfessionalUI[] {
   const q = normalizeText(query.trim());
-  if (!q) {
-    return list;
-  }
-  return list.filter((professional) =>
-    [professional.name, professional.profession, professional.location].some(
-      (field) => normalizeText(field).includes(q)
+  if (!q) return list;
+  return list.filter((p) =>
+    [p.name, p.profession, p.location].some((f) =>
+      normalizeText(f).includes(q)
     )
   );
 }

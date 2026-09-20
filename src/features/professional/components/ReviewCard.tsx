@@ -1,10 +1,10 @@
 import { View } from "react-native";
-import AppText from "../Text";
+import AppText from "@/components/Text";
 import { Avatar, Card } from "heroui-native";
 import { Star } from "lucide-react-native";
 import { useTypeScale } from "@/util/responsive";
 
-interface ReviewProps {
+interface ReviewCardProps {
   name: string;
   initials: string;
   profession: string;
@@ -14,7 +14,7 @@ interface ReviewProps {
   comment: string;
 }
 
-const Review = ({
+export default function ReviewCard({
   name,
   initials,
   profession,
@@ -22,7 +22,7 @@ const Review = ({
   recommender,
   recommenderInitials,
   comment,
-}: ReviewProps) => {
+}: ReviewCardProps) {
   const t = useTypeScale();
 
   return (
@@ -89,6 +89,4 @@ const Review = ({
       </View>
     </Card>
   );
-};
-
-export default Review;
+}

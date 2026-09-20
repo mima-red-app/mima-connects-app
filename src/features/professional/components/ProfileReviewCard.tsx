@@ -5,13 +5,13 @@ import { Star } from "lucide-react-native";
 import AppText from "@/components/Text";
 import { useTypeScale } from "@/util/responsive";
 import { timeAgo } from "@/util/time-ago";
-import type { ProfileReview } from "@/features/professional/types/review-types";
+import type { ReviewUI } from "../types";
 
 const COLLAPSED_LINES = 3;
 const EXPAND_THRESHOLD = 120;
 
 interface ProfileReviewCardProps {
-  review: ProfileReview;
+  review: ReviewUI;
 }
 
 export default function ProfileReviewCard({ review }: ProfileReviewCardProps) {

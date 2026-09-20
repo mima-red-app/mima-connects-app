@@ -1,4 +1,4 @@
-import type { Professional } from "@/features/professional/types/professional-types";
+import type { ProfessionalUI } from "@/features/professional/types";
 import { normalizeText } from "@/util/search";
 
 const PROFESSION_KEYWORDS: { profession: string; words: string[] }[] = [
@@ -60,8 +60,8 @@ const PROFESSION_KEYWORDS: { profession: string; words: string[] }[] = [
 
 export function matchProfessionals(
   text: string,
-  list: Professional[]
-): Professional[] {
+  list: ProfessionalUI[]
+): ProfessionalUI[] {
   const normalized = normalizeText(text);
   const professions = PROFESSION_KEYWORDS.filter((entry) =>
     entry.words.some((word) => normalized.includes(word))
@@ -75,7 +75,7 @@ export function matchProfessionals(
   );
 }
 
-export function aiReply(matches: Professional[]): string {
+export function aiReply(matches: ProfessionalUI[]): string {
   if (matches.length === 0) {
     return "No encontré un servicio relacionado con eso. Prueba describiendo palabras como: luz, agua, pintura, aire, puerta, carro o celular.";
   }

@@ -11,13 +11,15 @@ import {
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react-native";
 
 import {
   loginSchema,
+  registerSchema,
   LoginSchemaType,
-} from "@/features/types/credential-types";
-import { signIn, signUp } from "@/features/auth/services/auth.service";
+  RegisterSchemaType,
+} from "@/features/auth/types";
+import { signIn, signUp } from "@/features/profile/services/auth.service";
 import Loader from "@/components/Loader";
 
 interface AuthFormProps {
@@ -44,14 +46,20 @@ function errorMessage(error: unknown): string {
 const AuthForm = ({ mode }: AuthFormProps) => {
   const isRegister = mode === "register";
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const form = useForm<LoginSchemaType>({
+
+  const loginForm = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
 
+  const registerForm = useForm<RegisterSchemaType>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { firstName: "", lastName: "", email: "", password: "" },
+  });
+
   const [isPending, setIsPending] = useState(false);
   const [focusedField, setFocusedField] = useState<
-    "email" | "password" | null
+    "firstName" | "lastName" | "email" | "password" | null
   >(null);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -73,14 +81,31 @@ const AuthForm = ({ mode }: AuthFormProps) => {
     paddingBottom: 0,
   };
 
-  const onSubmit = async (data: LoginSchemaType) => {
+  const onSubmitLogin = async (data: LoginSchemaType) => {
     setSubmitError(null);
     setIsPending(true);
     try {
-      const { session } = isRegister
-        ? await signUp(data.email, data.password)
-        : await signIn(data.email, data.password);
+      const { session } = await signIn(data.email, data.password);
+      if (!session) {
+        setIsPending(false);
+        setSubmitError("Revisa tu correo para confirmar tu cuenta.");
+        return;
+      }
+      router.replace("/(tab)/home");
+    } catch (error) {
+      setIsPending(false);
+      setSubmitError(errorMessage(error));
+    }
+  };
 
+  const onSubmitRegister = async (data: RegisterSchemaType) => {
+    setSubmitError(null);
+    setIsPending(true);
+    try {
+      const { session } = await signUp(data.email, data.password, {
+        first_name: data.firstName,
+        last_name: data.lastName,
+      });
       if (!session) {
         setIsPending(false);
         setSubmitError("Revisa tu correo para confirmar tu cuenta.");
@@ -111,107 +136,295 @@ const AuthForm = ({ mode }: AuthFormProps) => {
           </View>
 
           <View className="gap-5">
-            <Controller
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
-                <TextField isInvalid={!!fieldState.error}>
-                  <Label className="text-sm font-semibold text-foreground">
-                    Correo electrónico
-                  </Label>
-                  <InputGroup
-                    className={groupClassName(
-                      fieldState.error
-                        ? "error"
-                        : focusedField === "email"
-                          ? "focused"
-                          : "default"
-                    )}
-                  >
-                    <InputGroup.Prefix isDecorative>
-                      <Mail size={18} color="#9CA3AF" />
-                    </InputGroup.Prefix>
-                    <InputGroup.Input
-                      placeholder="tucorreo@ejemplo.com"
-                      placeholderTextColor="#9CA3AF"
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      onBlur={() => {
-                        field.onBlur();
-                        setFocusedField(null);
-                      }}
-                      onFocus={() => setFocusedField("email")}
-                      style={inputStyle}
-                      className="h-12 text-base"
-                    />
-                  </InputGroup>
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </TextField>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="password"
-              render={({ field, fieldState }) => (
-                <TextField isInvalid={!!fieldState.error}>
-                  <Label className="text-sm font-semibold text-foreground">
-                    Contraseña
-                  </Label>
-                  <InputGroup
-                    className={groupClassName(
-                      fieldState.error
-                        ? "error"
-                        : focusedField === "password"
-                          ? "focused"
-                          : "default"
-                    )}
-                  >
-                    <InputGroup.Prefix isDecorative>
-                      <Lock size={18} color="#9CA3AF" />
-                    </InputGroup.Prefix>
-                    <InputGroup.Input
-                      placeholder="••••••••"
-                      placeholderTextColor="#9CA3AF"
-                      secureTextEntry={!showPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      value={field.value}
-                      onChangeText={field.onChange}
-                      onBlur={() => {
-                        field.onBlur();
-                        setFocusedField(null);
-                      }}
-                      onFocus={() => setFocusedField("password")}
-                      style={inputStyle}
-                      className="h-12 text-base"
-                    />
-                    <InputGroup.Suffix>
-                      <Pressable
-                        onPress={() => setShowPassword((prev) => !prev)}
-                        hitSlop={8}
-                        accessibilityRole="button"
-                        accessibilityLabel={
-                          showPassword
-                            ? "Ocultar contraseña"
-                            : "Mostrar contraseña"
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff size={18} color="#9CA3AF" />
-                        ) : (
-                          <Eye size={18} color="#9CA3AF" />
+            {isRegister ? (
+              <>
+                <Controller
+                  control={registerForm.control}
+                  name="firstName"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Nombre
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "firstName"
+                              ? "focused"
+                              : "default"
                         )}
-                      </Pressable>
-                    </InputGroup.Suffix>
-                  </InputGroup>
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </TextField>
-              )}
-            />
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <User size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="Tu nombre"
+                          placeholderTextColor="#9CA3AF"
+                          autoCapitalize="words"
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("firstName")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  control={registerForm.control}
+                  name="lastName"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Apellido
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "lastName"
+                              ? "focused"
+                              : "default"
+                        )}
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <User size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="Tu apellido"
+                          placeholderTextColor="#9CA3AF"
+                          autoCapitalize="words"
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("lastName")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  control={registerForm.control}
+                  name="email"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Correo electrónico
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "email"
+                              ? "focused"
+                              : "default"
+                        )}
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <Mail size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="tucorreo@ejemplo.com"
+                          placeholderTextColor="#9CA3AF"
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("email")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  control={registerForm.control}
+                  name="password"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Contraseña
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "password"
+                              ? "focused"
+                              : "default"
+                        )}
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <Lock size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="••••••••"
+                          placeholderTextColor="#9CA3AF"
+                          secureTextEntry={!showPassword}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("password")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                        <InputGroup.Suffix>
+                          <Pressable
+                            onPress={() => setShowPassword((prev) => !prev)}
+                            hitSlop={8}
+                            accessibilityRole="button"
+                            accessibilityLabel={
+                              showPassword
+                                ? "Ocultar contraseña"
+                                : "Mostrar contraseña"
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff size={18} color="#9CA3AF" />
+                            ) : (
+                              <Eye size={18} color="#9CA3AF" />
+                            )}
+                          </Pressable>
+                        </InputGroup.Suffix>
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+              </>
+            ) : (
+              <>
+                <Controller
+                  control={loginForm.control}
+                  name="email"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Correo electrónico
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "email"
+                              ? "focused"
+                              : "default"
+                        )}
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <Mail size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="tucorreo@ejemplo.com"
+                          placeholderTextColor="#9CA3AF"
+                          keyboardType="email-address"
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("email")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+
+                <Controller
+                  control={loginForm.control}
+                  name="password"
+                  render={({ field, fieldState }) => (
+                    <TextField isInvalid={!!fieldState.error}>
+                      <Label className="text-sm font-semibold text-foreground">
+                        Contraseña
+                      </Label>
+                      <InputGroup
+                        className={groupClassName(
+                          fieldState.error
+                            ? "error"
+                            : focusedField === "password"
+                              ? "focused"
+                              : "default"
+                        )}
+                      >
+                        <InputGroup.Prefix isDecorative>
+                          <Lock size={18} color="#9CA3AF" />
+                        </InputGroup.Prefix>
+                        <InputGroup.Input
+                          placeholder="••••••••"
+                          placeholderTextColor="#9CA3AF"
+                          secureTextEntry={!showPassword}
+                          autoCapitalize="none"
+                          autoCorrect={false}
+                          value={field.value}
+                          onChangeText={field.onChange}
+                          onBlur={() => {
+                            field.onBlur();
+                            setFocusedField(null);
+                          }}
+                          onFocus={() => setFocusedField("password")}
+                          style={inputStyle}
+                          className="h-12 text-base"
+                        />
+                        <InputGroup.Suffix>
+                          <Pressable
+                            onPress={() => setShowPassword((prev) => !prev)}
+                            hitSlop={8}
+                            accessibilityRole="button"
+                            accessibilityLabel={
+                              showPassword
+                                ? "Ocultar contraseña"
+                                : "Mostrar contraseña"
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff size={18} color="#9CA3AF" />
+                            ) : (
+                              <Eye size={18} color="#9CA3AF" />
+                            )}
+                          </Pressable>
+                        </InputGroup.Suffix>
+                      </InputGroup>
+                      <FieldError>{fieldState.error?.message}</FieldError>
+                    </TextField>
+                  )}
+                />
+              </>
+            )}
           </View>
 
           <View className="mt-6 gap-5">
@@ -225,7 +438,11 @@ const AuthForm = ({ mode }: AuthFormProps) => {
               size="lg"
               className="w-full"
               isDisabled={isPending}
-              onPress={form.handleSubmit(onSubmit)}
+              onPress={
+                isRegister
+                  ? registerForm.handleSubmit(onSubmitRegister)
+                  : loginForm.handleSubmit(onSubmitLogin)
+              }
             >
               {isRegister ? "Registrarme" : "Iniciar sesión"}
             </Button>

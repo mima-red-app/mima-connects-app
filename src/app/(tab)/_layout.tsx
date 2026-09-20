@@ -9,7 +9,6 @@ const TabLayout = () => {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
       <Tabs
-
         screenOptions={{
           headerShown: true,
           header: ({ options }) => (
@@ -55,7 +54,24 @@ const TabLayout = () => {
             ),
           }}
         />
-        {/*<Tabs.Screen name="" options={{ title: "" }} />*/}
+        <Tabs.Screen
+          name="profile/edit"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="profile/reviews"
+          options={{
+            href: null,
+          }}
+        />
+        <Tabs.Screen
+          name="profile/professional"
+          options={{
+            href: null,
+          }}
+        />
       </Tabs>
     </SafeAreaView>
   );

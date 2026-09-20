@@ -9,10 +9,22 @@ export async function signIn(email: string, password: string) {
   return data;
 }
 
-export async function signUp(email: string, password: string) {
+export async function signUp(
+  email: string,
+  password: string,
+  profile: { first_name: string; last_name: string; phone?: string }
+) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        phone: profile.phone ?? null,
+        allow_contact: true,
+      },
+    },
   });
   if (error) throw error;
   return data;
@@ -29,15 +41,7 @@ export async function getSession() {
   return data.session;
 }
 
-export async function updateProfile(data: {
-  full_name?: string;
-  username?: string;
-  phone?: string;
-  avatar_url?: string;
-  profession?: string;
-  location?: string;
-  bio?: string;
-}) {
+export async function updateProfile(data: Record<string, unknown>) {
   const { data: updated, error } = await supabase.auth.updateUser({ data });
   if (error) throw error;
   return updated;

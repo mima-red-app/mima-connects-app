@@ -3,9 +3,8 @@ import { Pressable, ScrollView, TextInput, View } from "react-native";
 import { ChevronRight, Send, Sparkles, X } from "lucide-react-native";
 import { useThemeColor } from "heroui-native/hooks";
 import AppText from "@/components/Text";
-import { PROFESSIONALS } from "@/features/professional/data/professionals";
 import { aiReply, matchProfessionals } from "@/features/ai/ai-matcher";
-import type { Professional } from "@/features/professional/types/professional-types";
+import type { ProfessionalUI } from "@/features/professional/types";
 import { useTypeScale } from "@/util/responsive";
 
 interface Message {
@@ -15,10 +14,14 @@ interface Message {
 }
 
 interface AiAssistantProps {
-  onResults: (matches: Professional[]) => void;
+  professionals: ProfessionalUI[];
+  onResults: (matches: ProfessionalUI[]) => void;
 }
 
-export default function AiAssistant({ onResults }: AiAssistantProps) {
+export default function AiAssistant({
+  professionals,
+  onResults,
+}: AiAssistantProps) {
   const t = useTypeScale();
   const accent = useThemeColor("accent");
   const [open, setOpen] = useState(false);
@@ -34,9 +37,7 @@ export default function AiAssistant({ onResults }: AiAssistantProps) {
 
   const send = () => {
     const text = input.trim();
-    if (!text || typing) {
-      return;
-    }
+    if (!text || typing) return;
     setInput("");
     setMessages((prev) => [
       ...prev,
@@ -44,15 +45,11 @@ export default function AiAssistant({ onResults }: AiAssistantProps) {
     ]);
     setTyping(true);
     setTimeout(() => {
-      const found = matchProfessionals(text, PROFESSIONALS);
+      const found = matchProfessionals(text, professionals);
       onResults(found);
       setMessages((prev) => [
         ...prev,
-        {
-          id: `${Date.now()}-ai`,
-          role: "ai",
-          text: aiReply(found),
-        },
+        { id: `${Date.now()}-ai`, role: "ai", text: aiReply(found) },
       ]);
       setTyping(false);
     }, 900);
